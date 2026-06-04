@@ -128,6 +128,7 @@
                 <span class="spinner"></span> Генерирую... подожди 10-30 секунд
             </div>
             <div class="error" id="errorMsg"></div>
+            <div class="status" id="debugInfo" style="font-size:12px;color:#666;"></div>
             <img id="resultImage" style="display:none;">
             <br>
             <a id="downloadLink" style="display:none;color:#a78bfa;font-size:14px;">⬇️ Скачать картинку</a>
@@ -177,6 +178,7 @@
             }
             document.getElementById('resultImage').style.display = 'none';
             document.getElementById('errorMsg').textContent = '';
+            document.getElementById('debugInfo').textContent = '';
             document.getElementById('downloadLink').style.display = 'none';
         }
 
@@ -184,6 +186,7 @@
             document.getElementById('loadingArea').style.display = isLoading ? 'block' : 'none';
             document.getElementById(btnId).disabled = isLoading;
             document.getElementById('errorMsg').textContent = '';
+            document.getElementById('debugInfo').textContent = '';
             document.getElementById('resultImage').style.display = 'none';
             document.getElementById('downloadLink').style.display = 'none';
         }
@@ -209,19 +212,29 @@
             try {
                 const formData = new FormData();
                 formData.append('text', prompt);
+                
+                const key = getKey();
+                document.getElementById('debugInfo').textContent = 'Отправляю запрос...';
+                
                 const response = await fetch('https://api.deepai.org/api/text2img', {
                     method: 'POST',
-                    headers: { 'api-key': getKey() },
+                    headers: { 'api-key': key },
                     body: formData,
                 });
+                
                 const data = await response.json();
+                document.getElementById('debugInfo').textContent = 'Ответ получен: ' + JSON.stringify(data).substring(0, 200);
+                
                 if (data.output_url) {
                     showResult(data.output_url);
+                    document.getElementById('debugInfo').textContent = '';
                 } else {
-                    document.getElementById('errorMsg').textContent = 'Ошибка: ' + (data.err || 'попробуй ещё раз');
+                    document.getElementById('errorMsg').textContent = 'Ошибка API: ' + (data.err || data.error || 'неизвестная ошибка');
+                    document.getElementById('debugInfo').textContent = 'Полный ответ: ' + JSON.stringify(data);
                 }
             } catch (e) {
-                document.getElementById('errorMsg').textContent = 'Ошибка соединения. Проверь интернет.';
+                document.getElementById('errorMsg').textContent = 'Ошибка соединения: ' + e.message;
+                document.getElementById('debugInfo').textContent = 'Проверь интернет или VPN';
             } finally {
                 setLoading(false, 'genBtn');
             }
@@ -246,19 +259,29 @@
                 const formData = new FormData();
                 formData.append('image', fileInput.files[0]);
                 formData.append('text', prompt);
+                
+                const key = getKey();
+                document.getElementById('debugInfo').textContent = 'Отправляю фото на сервер...';
+                
                 const response = await fetch('https://api.deepai.org/api/image-editor', {
                     method: 'POST',
-                    headers: { 'api-key': getKey() },
+                    headers: { 'api-key': key },
                     body: formData,
                 });
+                
                 const data = await response.json();
+                document.getElementById('debugInfo').textContent = 'Ответ получен: ' + JSON.stringify(data).substring(0, 200);
+                
                 if (data.output_url) {
                     showResult(data.output_url);
+                    document.getElementById('debugInfo').textContent = '';
                 } else {
-                    document.getElementById('errorMsg').textContent = 'Ошибка: ' + (data.err || 'попробуй ещё раз');
+                    document.getElementById('errorMsg').textContent = 'Ошибка API: ' + (data.err || data.error || 'неизвестная ошибка');
+                    document.getElementById('debugInfo').textContent = 'Полный ответ: ' + JSON.stringify(data);
                 }
             } catch (e) {
-                document.getElementById('errorMsg').textContent = 'Ошибка соединения. Проверь интернет.';
+                document.getElementById('errorMsg').textContent = 'Ошибка соединения: ' + e.message;
+                document.getElementById('debugInfo').textContent = 'Проверь интернет или VPN';
             } finally {
                 setLoading(false, 'editBtn');
             }
