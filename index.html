@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест генерации</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #7b2ff7;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:active { background: #5a1fd6; }
+        img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 16px;
+        }
+        .status { margin: 10px 0; color: #aaa; }
+    </style>
+</head>
+<body>
+    <h2>🧪 Тест: работает или нет?</h2>
+    <p style="color:#aaa;font-size:14px;">Без ключа, без регистрации</p>
+    
+    <textarea id="prompt" placeholder="Напиши что угодно, например: красивый кот на закате"></textarea>
+    <button onclick="testGenerate()">🚀 Сгенерировать картинку</button>
+    
+    <div class="status" id="status"></div>
+    <img id="result" style="display:none;">
+
+    <script>
+        async function testGenerate() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const status = document.getElementById('status');
+            const img = document.getElementById('result');
+
+            if (!prompt) {
+                status.textContent = '⚠️ Напиши что-нибудь в поле выше';
+                return;
+            }
+
+            status.textContent = '⏳ Генерирую... подожди 10-20 секунд';
+            img.style.display = 'none';
+
+            try {
+                // Используем Pollinations.ai — бесплатно, без ключа, без регистрации
+                const encodedPrompt = encodeURIComponent(prompt);
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${Date.now()}`;
+
+                img.src = imageUrl;
+                img.style.display = 'block';
+                status.textContent = '✅ Готово! Если картинка видна — всё работает!';
+
+                // Если картинка не загрузилась за 15 секунд
+                setTimeout(() => {
+                    if (img.naturalWidth === 0) {
+                        status.textContent = '❌ Картинка не загрузилась. Проверь интернет или попробуй другой промпт.';
+                    }
+                }, 15000);
+
+            } catch (e) {
+                status.textContent = '❌ Ошибка: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
